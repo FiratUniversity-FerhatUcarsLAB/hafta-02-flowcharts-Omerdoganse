@@ -1,0 +1,263 @@
+
+Şunu dedin:
+merhab bir odevım var yardımcı olur musun 
+ChatGPT:
+Tabii ki Ömer 😊
+Ödevin konusunu ve senden tam olarak ne istendiğini yazar mısın?
+
+Şunu dedin:
+Universite Ders Kayıt Sistemi ¨ Sistem A¸cıklaması O˘grenci ders kayıt sisteminin t¨um kontrollerini ve kurallarını modelleyin. ¨ Sistem Gereksinimleri: O˘grenci giri¸si (¨o˘grenci no + ¸sifre) ¨ Ders listesini g¨or¨unt¨uleme (d¨ong¨u) Her ders i¸cin: Kontenjan kontrol¨u (ko¸sul) On ko¸sul dersi kontrol¨u (ko¸sul) ¨ Zaman ¸cakı¸sması kontrol¨u (ko¸sul) Kredi limiti kontrol¨u (toplam ≤ 35) (ko¸sul) Ders ekleme/¸cıkarma (d¨ong¨u) Danı¸sman onayı gerekli mi? (GPA ¡ 2.5 ise) (ko¸sul) Kayıt ¨ozeti g¨osterme ve kayıt onaylama G¨orev 4: LLM Prompt Stratejisi Karma¸sık Sistem ˙I¸cin Adım Adım Yakla¸sım: 1. Genel Yapı “Universite ders kayıt sisteminin genel akı¸sını a¸cıkla: giri¸s, ders listesi, ders ¨ se¸cimi, kontroller, onaylama.” 2. Kontrol Mekanizmaları “Ders kaydında yapılması gereken kontrolleri listele: kontenjan, ¨on ko¸sul, zaman ¸cakı¸sması, kredi limiti, danı¸sman onayı.” 3. Pseudocode Olu¸sturma “T¨um bu kontrollerle birlikte detaylı pseudocode yaz. ˙ I¸c i¸ce EGER- ˘ ˙ ISE yapıları ve d¨ong¨uler kullan.” 4. DOT D¨on¨u¸s¨um¨u “Bu pseudocode’u Graphviz DOT diline ¸cevir. Her kontrol noktasını diamond ile g¨oster.
+ChatGPT:
+
+11s boyunca düşündüm
+Harika — hemen tamamlıyorum. Aşağıda isteğine göre dört kısım halinde düzenledim: (1) Genel akış, (2) Kontrol mekanizmaları, (3) Detaylı pseudocode (iç içe IF ve döngülerle) ve (4) bu pseudocode’un Graphviz DOT gösterimi (karar noktaları diamond olarak işaretli). Hepsi Türkçe ve ödev gereksinimlerine uyacak şekilde hazırlanmıştır.
+
+1. Genel Yapı — Üniversite Ders Kayıt Sisteminin Genel Akışı
+Kullanıcı/giriş: Öğrenci, öğrenci no + şifre ile sisteme giriş yapar.
+
+Ders listesi gösterimi: Sistem mevcut/uygun dersleri ve öğrencinin almış olduğu/başarısız dersleri listeler.
+
+Ders seçimi: Öğrenci dersleri seçip/çıkarır (seçim bir döngü içinde yapılır).
+
+Kontroller (her seçilen ders için sırayla uygulanır):
+
+Kontenjan kontrolü
+
+Önkoşul kontrolü
+
+Zaman çatışması kontrolü
+
+(Güncel toplam kredi > limit mi?) kredi limiti kontrolü
+
+Danışman onayı gerekip gerekmediğinin kontrolü (ör. GPA < 2.5 ise)
+
+Kayıt özeti: Sistemde başarılı/başarısız eklemelerin özeti gösterilir; danışman onayı gerekenler belirtilebilir.
+
+Kayıt onaylama: Öğrenci (ve gerekli ise danışman) onayıyla kayıt kesinleşir.
+
+Kayıt sonuçları: Öğrenciye kesin kayıt/başarısız dersler listesi verilir.
+
+2. Kontrol Mekanizmaları (detaylı)
+Kimlik doğrulama: öğrenci_no + şifre doğrulanmalı.
+
+Kontenjan kontrolü: Dersin boş kontenjanı > 0 olmalı.
+
+Önkoşul kontrolü: Ders için tanımlı önkoşul(lar) varsa öğrenci bunları geçmiş olmalı.
+
+Zaman çatışması kontrolü: Dersin gün/saat aralığı, öğrencinin zaten kaydettiği derslerin zamanlarıyla çakışmamalı.
+
+Kredi limiti kontrolü: Toplam kayıtlı krediler + eklenmek istenen dersin kredisi ≤ 35.
+
+Danışman onayı kontrolü: Eğer öğrenci GANO/GPA < 2.5 ise (örnek kural), ders ekleme için danışman onayı gereklidir.
+
+Ders ekleme/çıkarma: Başarılı kontroller sonrası ders öğrenci programına eklenir; öğrenci istediğinde dersten çıkarabilir.
+
+Özet & onay: Tüm eklemeler sonrası sistem bir özet oluşturur; öğrenci onaylarsa kayıt tamamlanır.
+
+Hata/ret sebebi: Her reddedilen ders için sebep (kontenjan dolu, önkoşul yok, zaman çakışması, kredi aşıyor, danışman onayı eksik) belirtilmeli.
+
+3. Ayrıntılı Pseudocode
+// Üniversite Ders Kayıt Sistemi - PSEUDOCODE
+// Veri Yapıları (örnek):
+// Student: {id, password, GPA, current_courses: list<CourseInstance>, current_credits}
+// Course: {course_id, name, credits, capacity, enrolled_count, prerequisites: list<course_id>, schedule: list<TimeSlot>}
+// TimeSlot: {day, start_time, end_time}
+// Selections: list<course_id> (öğrencinin seçmek istedikleri)
+
+// Başlangıç
+FUNCTION main():
+    // 1. Giriş
+    student_id, password <- prompt_login()
+    IF NOT authenticate(student_id, password):
+        show("Giriş başarısız")
+        RETURN
+
+    student <- load_student(student_id)
+    available_courses <- load_all_open_courses()
+
+    // 2. Ders listesini göster (döngü)
+    display_course_list(available_courses)
+    selections <- student_select_courses_loop(available_courses, student)
+
+    // 3. Kontrolleri uygulama — her seçilen ders için
+    accepted_courses <- []
+    rejected_courses <- [] // tuple(course_id, reason)
+    temp_total_credits <- student.current_credits
+
+    FOR each course_id IN selections:
+        course <- find_course_by_id(available_courses, course_id)
+
+        // A) Kontenjan kontrolü
+        IF course.enrolled_count >= course.capacity:
+            rejected_courses.append((course_id, "Kontenjan dolu"))
+            CONTINUE
+
+        // B) Önkoşul kontrolü
+        missing_prereqs <- []
+        FOR each pre_id IN course.prerequisites:
+            IF NOT student_has_passed(student, pre_id):
+                missing_prereqs.append(pre_id)
+        IF missing_prereqs IS NOT empty:
+            rejected_courses.append((course_id, "Önkoşul eksik: " + join(missing_prereqs, ", ")))
+            CONTINUE
+
+        // C) Zaman çatışması kontrolü
+        conflict_found <- FALSE
+        FOR each existing_course IN student.current_courses + accepted_courses:
+            IF schedules_conflict(course.schedule, existing_course.schedule):
+                conflict_found <- TRUE
+                conflict_with <- existing_course.course_id
+                BREAK
+        IF conflict_found:
+            rejected_courses.append((course_id, "Zaman çatışması: " + conflict_with))
+            CONTINUE
+
+        // D) Kredi limiti kontrolü
+        IF temp_total_credits + course.credits > 35:
+            rejected_courses.append((course_id, "Kredi limiti aşılıyor (" + toString(temp_total_credits + course.credits) + ")"))
+            CONTINUE
+
+        // E) Danışman onayı gerekliliği
+        IF student.GPA < 2.5:
+            // Danışman onayı gerektirir — burada otomatik red veya "onay bekleniyor" mantığı olabilir
+            IF NOT has_advisor_approved(student, course_id):
+                rejected_courses.append((course_id, "Danışman onayı gerekli"))
+                CONTINUE
+
+        // Tüm kontrolleri geçmiş ise dersi geçici olarak kabul et
+        accepted_courses.append(course)
+        temp_total_credits <- temp_total_credits + course.credits
+
+    // 4. Kayıt özeti gösterme
+    show_summary(student, accepted_courses, rejected_courses, temp_total_credits)
+
+    // 5. Kayıt onaylama
+    user_confirm <- prompt_confirm("Kaydı onaylıyor musunuz?")
+    IF NOT user_confirm:
+        show("Kayıt iptal edildi")
+        RETURN
+
+    // 6. Kayıt işlemini kesinleştir
+    FOR each course IN accepted_courses:
+        enroll_student_in_course(student, course)
+    show("Kayıt tamamlandı")
+    show_registered_courses(student)
+    RETURN
+
+// Yardımcı Fonksiyonlar (özeti)
+FUNCTION prompt_login(): ...
+FUNCTION authenticate(id, pw): ...
+FUNCTION load_student(id): ...
+FUNCTION load_all_open_courses(): ...
+FUNCTION display_course_list(courses): ...
+FUNCTION student_select_courses_loop(courses, student):
+    selections <- []
+    WHILE True:
+        choice <- prompt("Ders ekle (ders_id) veya 'bitir' yazın:")
+        IF choice == 'bitir':
+            BREAK
+        IF not exists_course(choice): show("Geçersiz ders id"); CONTINUE
+        // toggle: eğer daha önce eklenmişse çıkar
+        IF choice IN selections:
+            selections.remove(choice)
+            show(choice + " seçimi kaldırıldı")
+        ELSE:
+            selections.append(choice)
+            show(choice + " seçildi")
+    RETURN selections
+
+FUNCTION student_has_passed(student, course_id): ...
+FUNCTION schedules_conflict(schedule1, schedule2): 
+    FOR each slot1 IN schedule1:
+        FOR each slot2 IN schedule2:
+            IF slot1.day == slot2.day AND times_overlap(slot1.start_time, slot1.end_time, slot2.start_time, slot2.end_time):
+                RETURN True
+    RETURN False
+
+FUNCTION has_advisor_approved(student, course_id): ...
+FUNCTION enroll_student_in_course(student, course): 
+    // artan enrolled_count ve öğrenci current_courses güncelle
+    ...
+FUNCTION show_summary(student, accepted, rejected, credits): ...
+FUNCTION prompt_confirm(message): ...
+Notlar:
+
+accepted_courses içinde bulunan dersler, tüm kontrolleri geçmiş olanlardır. rejected_courses her reddedilen ders için sebebiyle birlikte tutulur.
+
+Danışman onayı kuralını iki şekilde ele alabilirsiniz: (A) GPA < 2.5 ise otomatik reddet, (B) veya "onay bekleyen" durumuna alıp danışmana yönlendirip sonrasında tekrar onaylamak. Pseudocode örneğinde (B) yerine basitçe onay kontrolü konuldu.
+
+4. DOT (Graphviz) Dönüşümü
+Aşağıdaki DOT kodu, akışı ve her kontrol noktasını diamond (karar) şeklinde gösterir. Bunu .dot dosyası olarak kaydedip Graphviz ile render edebilirsiniz (ör. dot -Tpng dosya.dot -o grafik.png).
+
+digraph DersKayit {
+  rankdir=TB;
+  node [shape=box, fontsize=12];
+
+  Start [label="Start"];
+  Login [label="Öğrenci girişi\n(öğrenci_no + şifre)"];
+  ShowCourses [label="Ders listesini göster"];
+  SelectionLoop [label="Ders seçme döngüsü\n(seçimler alınır)"];
+  ForEachCourse [label="Her seçilen ders için işlem", shape=box];
+
+  // Karar düğümleri diamond
+  CapacityCheck [label="Kontenjan boş mu?", shape=diamond];
+  PrereqCheck [label="Önkoşul(lar) tamam mı?", shape=diamond];
+  TimeConflictCheck [label="Zaman çakışması var mı?", shape=diamond];
+  CreditLimitCheck [label="Kredi limiti aşılıyor mu? (≤35)", shape=diamond];
+  AdvisorCheck [label="Danışman onayı gerekli mi? (GPA < 2.5)", shape=diamond];
+
+  AcceptCourse [label="Dersi kabul et\n(temp kabul)", shape=box];
+  RejectCourse [label="Dersi reddet\n(sebep göster)", shape=box];
+  Summary [label="Kayıt özeti göster"];
+  Confirm [label="Öğrenciden onay al"];
+  Finalize [label="Kayıtları kesinleştir\n(enroll işlemi)"];
+  End [label="End"];
+
+  // Akış
+  Start -> Login;
+  Login -> ShowCourses;
+  ShowCourses -> SelectionLoop;
+  SelectionLoop -> ForEachCourse;
+
+  ForEachCourse -> CapacityCheck;
+
+  CapacityCheck -> PrereqCheck [label="Evet"];
+  CapacityCheck -> RejectCourse [label="Hayır\n(Kontenjan dolu)"];
+
+  PrereqCheck -> TimeConflictCheck [label="Evet"];
+  PrereqCheck -> RejectCourse [label="Hayır\n(Önkoşul eksik)"];
+
+  TimeConflictCheck -> CreditLimitCheck [label="Hayır (çakışma yok)"];
+  TimeConflictCheck -> RejectCourse [label="Evet\n(Zaman çakışması)"];
+
+  CreditLimitCheck -> AdvisorCheck [label="Hayır (kredi OK)"];
+  CreditLimitCheck -> RejectCourse [label="Evet\n(Kredi limiti aşılıyor)"];
+
+  AdvisorCheck -> AcceptCourse [label="Hayır (onay gerekmez)"];
+  AdvisorCheck -> AcceptCourse [label="Evet ve onay mevcut"];
+  AdvisorCheck -> RejectCourse [label="Evet ama onay yok\n(Danışman onayı gerekli)"];
+
+  // Kabul edilen dersler döngüye geri
+  AcceptCourse -> ForEachCourse;
+
+  // Reddedilen dersler de döngüye geri (özet için kaydedilir)
+  RejectCourse -> ForEachCourse;
+
+  // Döngü bittiğinde (seçimler tamam)
+  ForEachCourse -> Summary [label="Tüm seçimler işlendi\n(seçim bitince)"];
+
+  Summary -> Confirm;
+  Confirm -> Finalize [label="Onaylandı"];
+  Confirm -> End [label="İptal edildi"];
+
+  Finalize -> End;
+
+  // Stil notu (isteğe bağlı)
+  node [fontname="Helvetica"];
+}
+İstersen bundan sonra:
+
+DOT grafiğini .png/.svg olarak oluşturmana yardımcı olacak bir .dot dosyası verebilirim (hazırlayıp indirebileceğin bir dosya linkiyle).
+
+Ya da pseudocode’u bir Python/Java/JavaScript/SQL gibi bir dile çevirip çalıştırılabilir prototip hâline getirebilirim.
+Hangisini tercih edersin?
