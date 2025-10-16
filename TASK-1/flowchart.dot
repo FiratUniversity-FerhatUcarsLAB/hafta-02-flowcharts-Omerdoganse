@@ -1,0 +1,44 @@
+digraph ATM {
+    node [fontname="Arial"];
+    
+    start [shape=oval, label="BAŞLA"];
+    pin [shape=parallelogram, label="PIN gir"];
+    check_pin [shape=diamond, label="PIN doğru mu?"];
+    retry [shape=box, label="Hatalı PIN sayısını artır"];
+    blocked [shape=oval, label="Kart bloke edildi"];
+    menu [shape=parallelogram, label="Bakiyeyi ve limitleri göster"];
+    amount [shape=parallelogram, label="Çekilecek tutarı gir"];
+    mod20 [shape=diamond, label="20 TL'nin katı mı?"];
+    balance [shape=diamond, label="Yeterli bakiye var mı?"];
+    limit [shape=diamond, label="Günlük limit aşıldı mı?"];
+    withdraw [shape=box, label="Parayı ver ve fiş yazdır"];
+    again [shape=diamond, label="Başka işlem yapmak istiyor mu?"];
+    end [shape=oval, label="BİTİR"];
+
+    start -> pin;
+    pin -> check_pin;
+
+    check_pin -> menu [label="Evet"];
+    check_pin -> retry [label="Hayır"];
+    retry -> check_pin [label="Yeni PIN gir"];
+    retry -> blocked [label="3 hatalı giriş"];
+
+    menu -> amount;
+    amount -> mod20;
+
+    mod20 -> balance [label="Evet"];
+    mod20 -> amount [label="Hayır"];
+
+    balance -> limit [label="Evet"];
+    balance -> amount [label="Hayır"];
+
+    limit -> withdraw [label="Hayır"];
+    limit -> amount [label="Evet"];
+
+    withdraw -> again;
+
+    again -> amount [label="Evet"];
+    again -> end [label="Hayır"];
+
+    blocked -> end;
+}
