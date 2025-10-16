@@ -1,0 +1,236 @@
+G¨orev 5: Akıllı Ev G¨uvenlik Sistemi
+Sistem A¸cıklaması
+IoT tabanlı akıllı ev g¨uvenlik sisteminin alarm ve bildirim s¨ure¸clerini
+modelleyin.
+Sistem Gereksinimleri:
+Sistem aktif mi kontrol¨u (ko¸sul)
+Sens¨or okuma d¨ong¨us¨u (d¨ong¨u - s¨urekli)
+Hareket sens¨or¨u kontrol¨u (ko¸sul)
+Kapı/pencere sens¨or¨u kontrol¨u (ko¸sul)
+Kamera aktivasyonu (ko¸sul)
+Yanlı¸s alarm kontrol¨u (ev sahibi evde mi?) (ko¸sul)
+Alarm seviyesi belirleme (1-d¨u¸s¨uk, 2-orta, 3-y¨uksek) (ko¸sul)
+Bildirim g¨onderme (SMS + App + Email)
+Bekle ve tekrar kontrol et (d¨ong¨u)
+Alarm sıfırlama veya devam ettirme (ko¸sul)
+
+
+S¨urekli C¸ alı¸san Sistemler ˙I¸cin:
+Sonsuz D¨ong¨u Yakla¸sımı
+“Akıllı ev g¨uvenlik sistemi 7/24 ¸calı¸sır. Ana d¨ong¨u i¸cinde sens¨or okuma,
+tehdit algılama, alarm verme ve bildirim g¨onderme s¨ure¸clerini i¸ceren
+pseudocode yaz.”
+Ozel Notlar: ¨
+Ana DONG ¨ U s¨urekli ¸calı¸sır (DO ¨ GRU ko¸sulu ile) ˘
+Her d¨ong¨u iterasyonunda t¨um sens¨orler kontrol edilir
+Tehdit seviyesine g¨ore farklı aksiyonlar alınır
+Alarm sıfırlama komutu gelene kadar devam eder
+DOT’ta Sonsuz D¨ong¨u
+DOT dilinde sonsuz d¨ong¨uy¨u g¨ostermek i¸cin geri ok kullanın ve ”S¨urekli”
+etiketi ekleyin.
+ChatGPT:
+7s boyunca düşündüm
+1. Kısa Özet (5–6 satır)
+
+IoT tabanlı Akıllı Ev Güvenlik Sistemi 7/24 çalışır; ana döngü içinde tüm sensörler periyodik olarak okunur ve tehdit değerlendirmesi yapılır.
+Her iterasyonda hareket, kapı/pencere ve kamera tetiklemeleri kontrol edilir; yanıltıcı alarmlar için ev sahibi kontrolü (owner_home) dikkate alınır.
+Tehdit seviyesine göre (1=düşük, 2=orta, 3=yüksek) farklı aksiyonlar alınır: kamera kaydı başlatma, siren, ve çok kanallı bildirim (SMS + App + Email).
+Alarm aktif kaldığı sürece sistem alarmı sürdürür; kullanıcı alarmı sıfırlayana kadar veya yetkili onayı gelene kadar devam eder.
+Ana döngü sonsuzdur ve her iterasyonda bekle → tekrar kontrol et mantığıyla çalışır.
+
+2. Kontrol Mekanizmaları (kısa)
+
+Sistem aktif mi? (koşul) — eğer değilse bekle/uyku modunda kal.
+
+Sensör okuma döngüsü — her iterasyonda tüm sensörler okunur.
+
+Hareket sensörü kontrolü — hareket algılandı mı?
+
+Kapı/pencere sensörü kontrolü — kapı/pencere açıldı mı?
+
+Kamera aktivasyonu — belirli tetikleyicilerde (seviye≥2 veya hareket+kapı) kamera kaydı başlat.
+
+Yanlış alarm kontrolü — ev sahibi evde mi? (owner_home) veya doğrulama yapılmalı.
+
+Alarm seviyesi belirleme — kurallara göre 1/2/3 olarak belirle.
+
+Bildirim gönderme — SMS, mobil uygulama bildirimi ve e-posta.
+
+Bekle ve tekrar kontrol et — döngü tekrarlanır.
+
+Alarm sıfırlama/sonlandırma — kullanıcı veya yetkili tarafından sıfırlanana kadar alarm devam eder.
+
+3. Sonsuz Döngü İçeren Ayrıntılı Pseudocode
+// Veri Yapıları (örnek)
+// SystemState: {active: bool, alarm_active: bool, alarm_level: int, last_event: Event}
+// Event: {type, timestamp, details}
+// Sensors: {motion_sensors[], door_window_sensors[], cameras[]}
+// owner_home(): bool  -> ev sahibi mi kontrolü (geofencing / manuel durum)
+
+FUNCTION main():
+    system <- load_system_state()
+    WHILE TRUE:                        // Ana DÖNGÜ (Sürekli)
+        IF NOT system.active:
+            sleep(IDLE_INTERVAL)       // sistem pasif ise kısa uyku
+            CONTINUE
+
+        // 1) Sensörleri oku
+        events <- []
+        FOR each m IN motion_sensors:
+            IF m.detected():
+                events.append(Event("motion", now(), m.id))
+        FOR each d IN door_window_sensors:
+            IF d.opened():
+                events.append(Event("door_window", now(), d.id))
+        FOR each c IN cameras:
+            // kameralar sadece tetiklenirse kaydetilecek (aktif tetiklemelerde)
+            IF c.tamper_detected():
+                events.append(Event("camera_tamper", now(), c.id))
+
+        // 2) Tehdit değerlendirme - seviye belirleme
+        level <- 0
+        IF exists event in events of type "door_window":
+            level <- max(level, 3)            // kapı/pencere açılması => yüksek
+        IF exists event in events of type "motion":
+            level <- max(level, 2)            // hareket => orta
+        IF multiple motion sensors triggered recently OR camera_tamper:
+            level <- max(level, 3)            // yoğun aktivite => yüksek
+        IF events is empty:
+            level <- 0
+
+        // 3) Yanlış alarm kontrolü (ev sahibi evde mi?)
+        IF level > 0 AND owner_home():
+            // sahte alarm ihtimali - düşük seviye uyarı veya bekle/doğrula
+            IF level == 3:
+                // yüksek seviye ama ev sahibi dolu bilgisi -> yine de dikkat
+                escalate <- prompt_for_quick_confirmation(owner_contact)
+                IF escalate == FALSE:
+                    // owner doğrulamazsa alarmı başlat
+                    system.alarm_active <- TRUE
+                    system.alarm_level <- level
+                ELSE:
+                    // owner doğruladı veya iptal etti -> logla, devam etme
+                    log("Owner confirmed -> false alarm avoided")
+                    level <- 0
+            ELSE:
+                // düşük/orta seviye: bekle ve yeniden doğrula
+                wait_and_recheck_short()
+                // recheck sensörler (kısaltılmış)
+                re_events <- recheck_sensors_quick()
+                IF re_events indicates persistence:
+                    system.alarm_active <- TRUE
+                    system.alarm_level <- max(level, determine_level(re_events))
+                ELSE:
+                    level <- 0
+
+        // 4) Alarm yönetimi
+        IF level == 0:
+            // hiçbir şey yok veya doğrulandı => eğer alarm aktif ise kontrol et
+            IF system.alarm_active:
+                // alarm zaten aktif - eğer reset komutu geldiyse sıfırla
+                IF received_reset_command():
+                    system.alarm_active <- FALSE
+                    system.alarm_level <- 0
+                    log("Alarm sıfırlandı")
+                ELSE:
+                    // alarm devam ediyor (kullanıcı resetleyene kadar)
+                    continue_alarm_actions(system.alarm_level)
+        ELSE:
+            // level > 0 ve alarm tetiklenecek
+            system.alarm_active <- TRUE
+            system.alarm_level <- level
+
+            // Kamera aktivasyonu kararları
+            IF level >= 2:
+                FOR each cam IN cameras:
+                    cam.start_recording(duration_for_level(level))
+                log("Kamera kaydı başlatıldı, seviye=" + level)
+
+            // Siren/yerel uyarılar
+            IF level == 3:
+                activate_siren()
+                lock_doors_if_configured()
+
+            // Bildirim gönderme (SMS + App + Email)
+            notification_payload <- build_notification(system, events, level)
+            send_sms(owner_phone, notification_payload)
+            send_app_notification(owner_userid, notification_payload)
+            send_email(owner_email, notification_payload)
+            log("Bildirimler gönderildi, seviye=" + level)
+
+            // Alarm sıfırlama beklemesi
+            WAIT alarm_notification_ack_timeout
+            IF received_reset_command():
+                system.alarm_active <- FALSE
+                system.alarm_level <- 0
+                stop_all_recordings()
+                log("Alarm kullanıcı tarafından sıfırlandı")
+            ELSE:
+                // reset gelmedi -> alarm devam eder; ek önlemler alınabilir (polis bildirimi vb.)
+                IF level == 3 AND auto_notify_authorities_enabled():
+                    notify_authorities(build_authority_report(system, events))
+        
+        // 5) Döngü sonu - kısa bekle ve tekrar et (Sürekli)
+        sleep(MONITOR_INTERVAL)
+    END WHILE
+END FUNCTION
+
+4. Graphviz DOT — Sonsuz Döngü ile Akış (karar düğümleri diamond)
+
+Aşağıdaki DOT grafiğinde ana döngü geri okla gösterilmiş ve “Sürekli” etiketi eklenmiştir. Karar noktaları diamond ile belirtilmiştir.
+
+digraph AkilliEvGuvenlik {
+  rankdir=TB;
+  node [shape=box, fontsize=11, fontname="Helvetica"];
+  Start [label="Start"];
+  CheckActive [label="Sistem aktif mi?", shape=diamond];
+  ReadSensors [label="Sensörleri oku (hareket, kapı/pencere, kamera)"];
+  ThreatEval [label="Tehdit seviyesi belirle\n(0,1,2,3)", shape=diamond];
+  OwnerCheck [label="Ev sahibi evde mi?", shape=diamond];
+  ConfirmByOwner [label="Owner doğrulama isteği"];
+  AlarmActions [label="Alarm aktif et / kamera başlat / siren / kilitle"];
+  Notify [label="Bildirim gönder (SMS + App + Email)"];
+  ResetCheck [label="Alarm sıfırlama komutu geldi mi?", shape=diamond];
+  Escalate [label="Yetkililere bildir / ek önlem"];
+  WaitAndLoop [label="Bekle\n(MONITOR_INTERVAL)\n'Sürekli' -> geri ok", shape=box];
+  End [label="End"];
+
+  // Akış
+  Start -> CheckActive;
+  CheckActive -> ReadSensors [label="Evet"];
+  CheckActive -> WaitAndLoop [label="Hayır\n(uyku/idle)"];
+
+  ReadSensors -> ThreatEval;
+
+  ThreatEval -> OwnerCheck [label="Seviye>0"];
+  ThreatEval -> ResetCheck [label="Seviye=0"];
+
+  OwnerCheck -> ConfirmByOwner [label="Owner evde ise"];
+  OwnerCheck -> AlarmActions [label="Owner yok / doğrulama gerekmez"];
+
+  ConfirmByOwner -> AlarmActions [label="Doğrulamaz veya şüphe devam"];
+  ConfirmByOwner -> WaitAndLoop [label="Owner doğruladı -> false alarm"];
+
+  AlarmActions -> Notify;
+  Notify -> ResetCheck;
+
+  ResetCheck -> WaitAndLoop [label="Hayır (devam et)"];
+  ResetCheck -> WaitAndLoop [label="Evet (sıfırla ve logla)"];
+
+  // Yüksek seviye için ek yol
+  AlarmActions -> Escalate [label="Seviye=3 ve auto_notify_authorities"];
+  Escalate -> Notify;
+
+  // Döngü geri dönüşü - SÜREKLİ
+  WaitAndLoop -> ReadSensors [label="Sürekli", style="bold", color="black"];
+
+  // Stil
+  node [fontname="Helvetica"];
+}
+
+
+İstersen:
+
+Bu pseudocode’u gerçek bir dilde (Python/Node.js) çalışan bir demo hâline çevireyim.
+
+Ya da DOT dosyasını .png olarak oluşturup görsel vereyim. Hangisini istersin?
