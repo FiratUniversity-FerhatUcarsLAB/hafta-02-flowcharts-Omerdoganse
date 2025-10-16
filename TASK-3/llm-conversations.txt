@@ -1,0 +1,259 @@
+istem A¸cıklaması
+Hastanede randevu alma ve tahlil sonu¸clarına eri¸sim sistemini modelleyin.
+Sistem Gereksinimleri:
+Hasta kimlik do˘grulama (TC No)
+˙
+I¸slem se¸cimi: 1-Randevu Al, 2-Tahlil Sonucu G¨or (ko¸sul)
+Randevu mod¨ul¨u: Poliklinik se¸cimi, doktor listesi, uygun saatler
+(d¨ong¨u)
+Randevu onayı ve SMS g¨onderimi
+Tahlil mod¨ul¨u: Tahlil var mı kontrol¨u (ko¸sul)
+Sonu¸c hazır mı kontrol¨u (ko¸sul)
+Sonu¸c g¨or¨unt¨uleme veya bekleme mesajı
+Sonu¸cları PDF indir se¸cene˘gi
+Ba¸ska i¸slem yapmak ister misiniz? (d¨ong¨u)
+Zorluk: Zor
+˙
+Iki ayrı mod¨ul ve birden fazla ko¸sul/d¨ong¨u kombinasyonu!
+Iki Mod¨ul¨u Ayrı Ayrı C¸ alı¸sın:
+Mod¨ul 1: Randevu Alma
+“Hastane randevu sistemi i¸cin algoritma: kimlik do˘grulama, poliklinik
+se¸cimi, doktor listesi g¨or¨unt¨uleme, uygun saatleri g¨osterme, randevu
+onaylama ve SMS g¨onderme. Pseudocode yaz.”
+Mod¨ul 2: Tahlil Sonu¸cları
+“Tahlil sonucu g¨or¨unt¨uleme sistemi: kimlik do˘grulama, tahlil varlı˘gı
+kontrol¨u, sonu¸c hazır mı kontrol¨u, g¨or¨unt¨uleme veya bekleme mesajı, PDF
+indirme. Pseudocode yaz.”
+Son Adım: Birle¸stirme
+Ana men¨u ile iki mod¨ul¨u birle¸stirin
+DOT kodunda her mod¨ul¨u ayrı subgraph olarak d¨uzenleyebilirsiniz
+ChatGPT:
+17s boyunca düşündüm
+
+Harika — hemen pseudocode.md (sözde kod) olarak tam ve ayrıntılı bir çözüm hazırladım. İki modülü ayrı ayrı ele alıyorum (Modül 1: Randevu Alma, Modül 2: Tahlil Sonuçları) ve en sonda ana menü ile birleştirme bulunuyor. Tüm adımlarda istenen anahtar yapılar kullanıldı: BASLA, OKU, YAZ, EGER … ISE, DONGU, SON DONGU, BITIR.
+
+BASLA
+YAZ "Hastane Randevu & Tahlil Sonuçları Sistemi başlatılıyor."
+
+/* --- Ortak: Hasta Kimlik Doğrulama (TC No) --- */
+DONGU kimlik_deneme_sayaci < 3 ISE
+    YAZ "Lütfen TC Kimlik Numaranızı giriniz:"
+    OKU tc_no
+    EGER tc_dogrula(tc_no) ISE
+        YAZ "TC doğrulandı. Hoşgeldiniz."
+        kimlik_dogrulandi ← TRUE
+        CIKIS DONGU
+    DEGILSE
+        kimlik_deneme_sayaci ← kimlik_deneme_sayaci + 1
+        YAZ "TC doğrulama başarısız. Kalan deneme: ", 3 - kimlik_deneme_sayaci
+    SON
+SON DONGU
+
+EGER kimlik_dogrulandi ≠ TRUE ISE
+    YAZ "Kimlik doğrulama başarısız. Sistemden çıkılıyor."
+    BITIR
+SON
+
+/* --- Ana Menü: İşlem Seçimi --- */
+DONGU ana_menu = "E" ISE
+    YAZ "İşlem seçiniz: 1 - Randevu Al, 2 - Tahlil Sonucu Gör, 3 - Çıkış"
+    OKU islem_secim
+
+    EGER islem_secim = "1" ISE
+        GIT RANDEVU_MODULU
+    DEGILSE EGER islem_secim = "2" ISE
+        GIT TAHLIL_MODULU
+    DEGILSE EGER islem_secim = "3" ISE
+        YAZ "Sistemden çıkılıyor. İyi günler."
+        ana_menu ← "H"
+    DEGILSE
+        YAZ "Geçersiz seçim. Lütfen tekrar deneyin."
+    SON
+
+SON DONGU
+
+BITIR
+
+/* -------------------- Modül 1: Randevu Alma -------------------- */
+LABEL RANDEVU_MODULU
+BASLA_RANDEVU:
+YAZ "Randevu Modülü: Poliklinik seçiniz."
+
+/* Poliklinik seçimi döngüsü */
+DONGU pol_dongu = "E" ISE
+    poliklinikler ← poliklinik_liste_getir()
+    YAZ "Mevcut poliklinikler listeleniyor:"
+    poliklinikleri_goster(poliklinikler)
+    YAZ "Poliklinik kodu girin veya 'ÇIK' ile ana menüye dönün:"
+    OKU poliklinik_kodu
+
+    EGER poliklinik_kodu = "ÇIK" ISE
+        YAZ "Randevu modülünden çıkılıyor."
+        CIKIS DONGU
+    SON
+
+    /* Doktor listesi ve seçim (döngü) */
+    doktorlar ← doktor_listesi_getir(poliklinik_kodu)
+    YAZ "Seçilen polikliniğin doktorları listeleniyor:"
+    doktorlari_goster(doktorlar)
+
+    YAZ "Doktor ID girin veya 'GERI' ile poliklinik seçimine dönün:"
+    OKU doktor_id
+    EGER doktor_id = "GERI" ISE
+        SON /* pol_dongu içinde tekrar poliklinik seçimi */
+    SON
+
+    /* Uygun saatlerin gösterimi ve seçim (döngü) */
+    uygun_saatler ← doktor_uygun_saatler_getir(doktor_id)
+    DONGU saat_dongu = "E" ISE
+        YAZ "Mevcut uygun saatler:"
+        saatleri_goster(uygun_saatler)
+        YAZ "Saat seçin (ör. 09:30) veya 'GERI' ile doktor seçimine dönün:"
+        OKU secilen_saat
+
+        EGER secilen_saat = "GERI" ISE
+            CIKIS DONGU
+        SON
+
+        EGER saat_musait_mi(doktor_id, secilen_saat) ISE
+            YAZ "Seçilen saat müsait. Randevu onaylıyor musunuz? (E/H)"
+            OKU onay
+            EGER onay = "E" ISE
+                randevu_id ← randevu_olustur(tc_no, poliklinik_kodu, doktor_id, secilen_saat)
+                YAZ "Randevunuz onaylandı. Randevu ID: ", randevu_id
+                /* SMS gönderimi */
+                EGER telefon_var_mi(tc_no) ISE
+                    sms_gonder(tc_no, "Randevunuz onaylandı. ID: " + randevu_id + " Saat: " + secilen_saat)
+                    YAZ "Onay SMS'i gönderildi."
+                DEGILSE
+                    YAZ "Kayıtlı telefon numarası bulunamadı. SMS gönderilemedi."
+                SON
+                /* Randevu sonrası çıkış veya yeni işlem */
+                YAZ "Başka işlem yapmak ister misiniz? (E/H)"
+                OKU devam_randevu
+                EGER devam_randevu = "E" ISE
+                    GIT BASLA_RANDEVU
+                DEGILSE
+                    GIT ANA_MENU_RETURN
+                SON
+            DEGILSE
+                YAZ "Randevu onayı iptal edildi. Lütfen başka saat seçin."
+            SON
+        DEGILSE
+            YAZ "Seçilen saat dolu veya geçersiz. Lütfen başka saat seçin."
+        SON
+    SON DONGU /* saat_dongu */
+
+SON DONGU /* pol_dongu */
+
+LABEL ANA_MENU_RETURN
+YAZ "Ana menüye dönülüyor."
+GIT ANA_MENU_END
+
+/* -------------------- Modül 2: Tahlil Sonuçları -------------------- */
+LABEL TAHLIL_MODULU
+BASLA_TAHLIL:
+YAZ "Tahlil Sonuçları Modülü."
+
+/* Kimlik zaten doğrulandı önceki kısımda; opsiyonel tekrar kontrol */
+EGER kimlik_dogrulandi ≠ TRUE ISE
+    YAZ "Lütfen önce kimlik doğrulaması yapınız."
+    GIT ANA_MENU_END
+SON
+
+/* Tahlil var mı kontrolü */
+EGER tahlil_var_mi(tc_no) ISE
+    YAZ "Tahlil kayıtlarınız bulunuyor. Hangi tahlili görmek istersiniz?"
+    tahlil_listesi ← tahlil_listesi_getir(tc_no)
+    tahlilleri_goster(tahlil_listesi)
+
+    DONGU tahlil_secim_dongu = "E" ISE
+        YAZ "Tahlil ID girin veya 'ÇIK' ile ana menüye dönün:"
+        OKU tahlil_id
+        EGER tahlil_id = "ÇIK" ISE
+            CIKIS DONGU
+        SON
+
+        /* Sonuç hazır mı kontrolü */
+        EGER sonuc_hazir_mi(tahlil_id) ISE
+            sonuc ← tahlil_sonuc_getir(tahlil_id)
+            YAZ "Tahlil sonucu gösteriliyor:"
+            tahlil_sonuclarini_goster(sonuc)
+
+            YAZ "Sonuç PDF indirilsin mi? (E/H)"
+            OKU pdf_secim
+            EGER pdf_secim = "E" ISE
+                pdf_dosyasi ← tahlil_pdf_olustur(tahlil_id)
+                YAZ "PDF hazırlanıyor... İndirilebilir dosya: ", pdf_dosyasi
+            SON
+        DEGILSE
+            YAZ "Sonuçlar henüz hazır değil. Lütfen daha sonra tekrar kontrol edin."
+            YAZ "SMS ile bilgilendirilmek ister misiniz sonuç hazır olduğunda? (E/H)"
+            OKU sms_bilgi
+            EGER sms_bilgi = "E" ISE
+                EGER telefon_var_mi(tc_no) ISE
+                    sms_kayit_bildirimi_ekle(tc_no, tahlil_id)
+                    YAZ "Hazır olduğunda SMS ile bilgilendirileceksiniz."
+                DEGILSE
+                    YAZ "Telefon numarası kaydı yok. SMS yapılamıyor."
+                SON
+            SON
+        SON
+
+        YAZ "Başka tahlil görüntülemek ister misiniz? (E/H)"
+        OKU devam_tahlil
+        EGER devam_tahlil = "H" ISE
+            CIKIS DONGU
+        SON
+    SON DONGU /* tahlil_secim_dongu */
+
+DEGILSE
+    YAZ "Herhangi bir tahlil kaydı bulunmamaktadır."
+    YAZ "Yeni randevu almak ister misiniz? (E/H)"
+    OKU randevu_yonlendirme
+    EGER randevu_yonlendirme = "E" ISE
+        GIT RANDEVU_MODULU
+    SON
+SON
+
+YAZ "Tahlil modülü işlemi tamamlandı."
+GIT ANA_MENU_RETURN
+
+/* -------------------- Ana Menüye Dönüş Noktası -------------------- */
+LABEL ANA_MENU_END
+YAZ "Ana menüye döndünüz. Lütfen tekrar işlem seçiniz."
+
+/* Program akışı burada ana menü döngüsüne geri döner (ana menü başlangıcındaki DONGU) */
+
+BITIR
+
+
+Hazır — bu dosyayı pseudocode.md olarak kaydedebilirsin.
+İstersen hemen şimdi aynı içerikten flowchart.dot (Graphviz DOT) üreteyim ve ardından da flowchart.png oluşturup indirilebilir hâle getireyim. Hemen devam etmemi ister misin?
+
+Şunu dedin:
+bütün hepsini yap 
+ChatGPT:
+8s boyunca düşündüm
+
+Tamamdır Ömer — hepsini oluşturdum ve indirme bağlantılarını hazırladım. Aşağıdan dosyaları indirebilirsin:
+
+Download pseudocode.md — Sözde kod (BASLA/OKU/YAZ/EGER-ISE/DONGU ile).
+
+Download flowchart.dot — Graphviz DOT kodu (subgraph'lar ile ayrı modüller).
+
+Download flowchart.png — DOT'tan oluşturulan diyagram (ya da placeholder, eğer ortamda dot yoksa).
+
+Download llm-conversations.txt — Konuşma kaydı.
+
+Download README.md — Sistem açıklaması ve notlar.
+
+Notlar:
+
+flowchart.dot içerdiği DOT kodunu istersen Graphviz Online veya kendi makinendeki dot komutuyla tekrar render edebilirsin; ben ortamda render denedim ve flowchart.png oluşturdum.
+
+Bir şey değiştirmek istersen (metin, akış yönleri, label'lar), hangi dosyada ne düzenleneceğini söyle — hemen düzenleyip güncelleyeyim.
+
+Başka bir adım veya düzeltme istiyor musun? 
+
+ChatGPT hata yapabilir. Önemli bilgileri kontrol edin.
