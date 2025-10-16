@@ -1,0 +1,88 @@
+
+digraph HospitalSystem {
+    rankdir=TB;
+    node [fontname="Arial"];
+
+    subgraph cluster_main {
+        label="Ana Menü";
+        style=rounded;
+        start [shape=oval,label="BAŞLA"];
+        login [shape=parallelogram,label="TC No OKU (tc_no)"];
+        check_login [shape=diamond,label="TC doğrulandı mı?"];
+        menu [shape=box,label="Ana Menü:\n1-Randevu Al\n2-Tahlil Sonuçu Gör\n3-Çıkış"];
+        end [shape=oval,label="BİTİR"];
+        start -> login -> check_login;
+        check_login -> menu [label="EVET"];
+        check_login -> end [label="HAYIR"];
+    }
+
+    /* Randevu Modülü */
+    subgraph cluster_randevu {
+        label="Modül 1: Randevu Alma";
+        style=dashed;
+        pol_list [shape=box,label="Poliklinikleri göster"];
+        choose_pol [shape=parallelogram,label="Poliklinik Kodu OKU"];
+        doc_list [shape=box,label="Doktor listesini göster"];
+        choose_doc [shape=parallelogram,label="Doktor ID OKU"];
+        show_times [shape=box,label="Uygun saatleri göster"];
+        choose_time [shape=parallelogram,label="Saat seç (OKU)"];
+        check_time [shape=diamond,label="Saat müsait mi?"];
+        confirm [shape=diamond,label="Onaylıyor musunuz?"];
+        create_appt [shape=box,label="Randevu oluştur (randevu_id)"];
+        sms_send [shape=box,label="SMS gönderimi"];
+        back_menu1 [shape=box,label="Ana menüye dön"];
+    }
+
+    /* Tahlil Modülü */
+    subgraph cluster_tahlil {
+        label="Modül 2: Tahlil Sonuçları";
+        style=dotted;
+        check_tahlil_exist [shape=diamond,label="Tahlil var mı?"];
+        show_tests [shape=box,label="Tahlil listesini göster"];
+        choose_test [shape=parallelogram,label="Tahlil ID OKU"];
+        check_ready [shape=diamond,label="Sonuç hazır mı?"];
+        show_result [shape=box,label="Sonucu göster"];
+        pdf_option [shape=diamond,label="PDF indirilsin mi?"];
+        make_pdf [shape=box,label="PDF oluştur ve indir"];
+        wait_msg [shape=box,label="Bekleyiniz: Sonuç hazır değil"];
+        sms_subscribe [shape=box,label="SMS bilgilendirme kaydı"];
+    }
+
+    /* Connections: Ana Menü -> Modüller */
+    menu -> pol_list [label="1"];
+    menu -> check_tahlil_exist [label="2"];
+    menu -> end [label="3"];
+
+    /* Randevu flow */
+    pol_list -> choose_pol;
+    choose_pol -> doc_list;
+    doc_list -> choose_doc;
+    choose_doc -> show_times;
+    show_times -> choose_time;
+    choose_time -> check_time;
+    check_time -> confirm [label="EVET"];
+    check_time -> show_times [label="HAYIR"];
+    confirm -> create_appt [label="EVET"];
+    confirm -> show_times [label="HAYIR"];
+    create_appt -> sms_send;
+    sms_send -> back_menu1;
+    back_menu1 -> menu;
+
+    /* Tahlil flow */
+    check_tahlil_exist -> show_tests [label="EVET"];
+    check_tahlil_exist -> back_menu1 [label="HAYIR"];
+    show_tests -> choose_test;
+    choose_test -> check_ready;
+    check_ready -> show_result [label="EVET"];
+    check_ready -> wait_msg [label="HAYIR"];
+    show_result -> pdf_option;
+    pdf_option -> make_pdf [label="EVET"];
+    pdf_option -> back_menu1 [label="HAYIR"];
+    make_pdf -> back_menu1;
+    wait_msg -> sms_subscribe;
+    sms_subscribe -> back_menu1;
+
+    /* Return from menu to login/logout */
+    end -> start [style=dotted, label="Yeniden başlatmak için"];
+}
+
