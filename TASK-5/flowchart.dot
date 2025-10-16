@@ -1,0 +1,48 @@
+digraph AkilliEvGuvenlik {
+  rankdir=TB;
+  node [shape=box, fontsize=11, fontname="Helvetica"];
+  Start [label="Start"];
+  CheckActive [label="Sistem aktif mi?", shape=diamond];
+  ReadSensors [label="Sensörleri oku (hareket, kapı/pencere, kamera)"];
+  ThreatEval [label="Tehdit seviyesi belirle\n(0,1,2,3)", shape=diamond];
+  OwnerCheck [label="Ev sahibi evde mi?", shape=diamond];
+  ConfirmByOwner [label="Owner doğrulama isteği"];
+  AlarmActions [label="Alarm aktif et / kamera başlat / siren / kilitle"];
+  Notify [label="Bildirim gönder (SMS + App + Email)"];
+  ResetCheck [label="Alarm sıfırlama komutu geldi mi?", shape=diamond];
+  Escalate [label="Yetkililere bildir / ek önlem"];
+  WaitAndLoop [label="Bekle\n(MONITOR_INTERVAL)\n'Sürekli' -> geri ok", shape=box];
+  End [label="End"];
+
+  // Akış
+  Start -> CheckActive;
+  CheckActive -> ReadSensors [label="Evet"];
+  CheckActive -> WaitAndLoop [label="Hayır\n(uyku/idle)"];
+
+  ReadSensors -> ThreatEval;
+
+  ThreatEval -> OwnerCheck [label="Seviye>0"];
+  ThreatEval -> ResetCheck [label="Seviye=0"];
+
+  OwnerCheck -> ConfirmByOwner [label="Owner evde ise"];
+  OwnerCheck -> AlarmActions [label="Owner yok / doğrulama gerekmez"];
+
+  ConfirmByOwner -> AlarmActions [label="Doğrulamaz veya şüphe devam"];
+  ConfirmByOwner -> WaitAndLoop [label="Owner doğruladı -> false alarm"];
+
+  AlarmActions -> Notify;
+  Notify -> ResetCheck;
+
+  ResetCheck -> WaitAndLoop [label="Hayır (devam et)"];
+  ResetCheck -> WaitAndLoop [label="Evet (sıfırla ve logla)"];
+
+  // Yüksek seviye için ek yol
+  AlarmActions -> Escalate [label="Seviye=3 ve auto_notify_authorities"];
+  Escalate -> Notify;
+
+  // Döngü geri dönüşü - SÜREKLİ
+  WaitAndLoop -> ReadSensors [label="Sürekli", style="bold", color="black"];
+
+  // Stil
+  node [fontname="Helvetica"];
+}
