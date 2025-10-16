@@ -1,0 +1,66 @@
+digraph DersKayit {
+  rankdir=TB;
+  node [shape=box, fontsize=12];
+
+  Start [label="Start"];
+  Login [label="Öğrenci girişi\n(öğrenci_no + şifre)"];
+  ShowCourses [label="Ders listesini göster"];
+  SelectionLoop [label="Ders seçme döngüsü\n(seçimler alınır)"];
+  ForEachCourse [label="Her seçilen ders için işlem", shape=box];
+
+  // Karar düğümleri diamond
+  CapacityCheck [label="Kontenjan boş mu?", shape=diamond];
+  PrereqCheck [label="Önkoşul(lar) tamam mı?", shape=diamond];
+  TimeConflictCheck [label="Zaman çakışması var mı?", shape=diamond];
+  CreditLimitCheck [label="Kredi limiti aşılıyor mu? (≤35)", shape=diamond];
+  AdvisorCheck [label="Danışman onayı gerekli mi? (GPA < 2.5)", shape=diamond];
+
+  AcceptCourse [label="Dersi kabul et\n(temp kabul)", shape=box];
+  RejectCourse [label="Dersi reddet\n(sebep göster)", shape=box];
+  Summary [label="Kayıt özeti göster"];
+  Confirm [label="Öğrenciden onay al"];
+  Finalize [label="Kayıtları kesinleştir\n(enroll işlemi)"];
+  End [label="End"];
+
+  // Akış
+  Start -> Login;
+  Login -> ShowCourses;
+  ShowCourses -> SelectionLoop;
+  SelectionLoop -> ForEachCourse;
+
+  ForEachCourse -> CapacityCheck;
+
+  CapacityCheck -> PrereqCheck [label="Evet"];
+  CapacityCheck -> RejectCourse [label="Hayır\n(Kontenjan dolu)"];
+
+  PrereqCheck -> TimeConflictCheck [label="Evet"];
+  PrereqCheck -> RejectCourse [label="Hayır\n(Önkoşul eksik)"];
+
+  TimeConflictCheck -> CreditLimitCheck [label="Hayır (çakışma yok)"];
+  TimeConflictCheck -> RejectCourse [label="Evet\n(Zaman çakışması)"];
+
+  CreditLimitCheck -> AdvisorCheck [label="Hayır (kredi OK)"];
+  CreditLimitCheck -> RejectCourse [label="Evet\n(Kredi limiti aşılıyor)"];
+
+  AdvisorCheck -> AcceptCourse [label="Hayır (onay gerekmez)"];
+  AdvisorCheck -> AcceptCourse [label="Evet ve onay mevcut"];
+  AdvisorCheck -> RejectCourse [label="Evet ama onay yok\n(Danışman onayı gerekli)"];
+
+  // Kabul edilen dersler döngüye geri
+  AcceptCourse -> ForEachCourse;
+
+  // Reddedilen dersler de döngüye geri (özet için kaydedilir)
+  RejectCourse -> ForEachCourse;
+
+  // Döngü bittiğinde (seçimler tamam)
+  ForEachCourse -> Summary [label="Tüm seçimler işlendi\n(seçim bitince)"];
+
+  Summary -> Confirm;
+  Confirm -> Finalize [label="Onaylandı"];
+  Confirm -> End [label="İptal edildi"];
+
+  Finalize -> End;
+
+  // Stil notu (isteğe bağlı)
+  node [fontname="Helvetica"];
+}
