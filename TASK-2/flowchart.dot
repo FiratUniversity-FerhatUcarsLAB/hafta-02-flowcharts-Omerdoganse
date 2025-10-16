@@ -1,0 +1,118 @@
+digraph ECommerce {
+    rankdir=TB;
+    node [fontname="Arial"];
+
+    start [shape=oval, label="BAŞLA"];
+    login_in [shape=parallelogram, label="Kullanıcı adı ve şifre OKU"];
+    check_login [shape=diamond, label="Giriş başarılı mı?"];
+    guest_msg [shape=box, label="Misafir olarak devam et"];
+    
+    list_categories [shape=box, label="Kategorileri listele"];
+    choose_category [shape=parallelogram, label="Kategori seç (OKU)"];
+    list_products [shape=box, label="Ürünleri göster"];
+    choose_product [shape=parallelogram, label="Ürün ID gir / GERİ"];
+    ask_add [shape=diamond, label="Sepete ekle?"];
+    read_qty [shape=parallelogram, label="Miktarı OKU"];
+    check_stock [shape=diamond, label="Stok yeterli mi?"];
+    add_cart [shape=box, label="Sepete ekle"];
+    stock_fail [shape=box, label="Stok yetersiz - uyarı"];
+
+    view_cart [shape=box, label="Sepeti göster"];
+    cart_edit_decision [shape=diamond, label="Sepeti düzenle?"];
+    edit_choice [shape=parallelogram, label="Miktar/Sil OKU"];
+    update_cart [shape=box, label="Sepeti güncelle"];
+    
+    discount_offer [shape=diamond, label="İndirim kodu uygulanacak mı?"];
+    read_code [shape=parallelogram, label="Kod OKU"];
+    check_code [shape=diamond, label="Kod geçerli mi?"];
+    apply_discount [shape=box, label="İndirim uygula"];
+    code_fail [shape=box, label="Geçersiz kod"];
+
+    calc_total [shape=box, label="Toplamı hesapla (indirim sonrası)"];
+    min50 [shape=diamond, label="Toplam ≥ 50 TL mı?"];
+    warn_min [shape=box, label="Uyarı: Minimum 50 TL"];
+    ask_continue_add [shape=diamond, label="Daha ürün ekle?"];
+
+    shipping_check [shape=diamond, label="Toplam ≥ 200 TL mı?"];
+    shipping_free [shape=box, label="Kargo = 0 (Ücretsiz)"];
+    shipping_calc [shape=box, label="Kargo hesapla"];
+
+    show_total [shape=parallelogram, label="Ödenecek toplamı göster"];
+    choose_payment [shape=parallelogram, label="Ödeme yöntemi seç (Kart/Havale/Kapıda)"];
+    payment_card [shape=parallelogram, label="Kart bilgilerini OKU"];
+    process_card [shape=diamond, label="Kart ödemesi başarılı mı?"];
+    payment_wait [shape=box, label="Ödeme Beklemede / Havale/Kapıda"];
+
+    order_create [shape=box, label="Siparişi oluştur ve onayla"];
+    success_msg [shape=box, label="Sipariş onaylandı, ID göster"];
+    retry_payment [shape=diamond, label="Tekrar denemek ister misiniz?"];
+    end [shape=oval, label="BİTİR"];
+
+    /* Akış */
+    start -> login_in;
+    login_in -> check_login;
+    check_login -> list_categories [label="EVET"];
+    check_login -> guest_msg [label="HAYIR"];
+    guest_msg -> list_categories;
+
+    list_categories -> choose_category;
+    choose_category -> list_products;
+    list_products -> choose_product;
+    choose_product -> ask_add;
+    ask_add -> read_qty [label="EVET"];
+    ask_add -> list_categories [label="HAYIR"];
+
+    read_qty -> check_stock;
+    check_stock -> add_cart [label="EVET"];
+    check_stock -> stock_fail [label="HAYIR"];
+    stock_fail -> list_categories;
+    add_cart -> list_categories;
+
+    /* Kullanıcı sepeti görüntüleme akışı */
+    list_categories -> view_cart [label="SEPETİ GÖRÜNTÜLE"];
+    view_cart -> cart_edit_decision;
+    cart_edit_decision -> edit_choice [label="EVET"];
+    cart_edit_decision -> discount_offer [label="HAYIR"];
+
+    edit_choice -> update_cart;
+    update_cart -> view_cart;
+
+    /* İndirim */
+    discount_offer -> read_code [label="EVET"];
+    discount_offer -> calc_total [label="HAYIR"];
+    read_code -> check_code;
+    check_code -> apply_discount [label="EVET"];
+    check_code -> code_fail [label="HAYIR"];
+    code_fail -> view_cart;
+    apply_discount -> calc_total;
+
+    /* Toplam / minimum kontrol */
+    calc_total -> min50;
+    min50 -> shipping_check [label="EVET"];
+    min50 -> warn_min [label="HAYIR"];
+    warn_min -> ask_continue_add;
+    ask_continue_add -> list_categories [label="EVET"];
+    ask_continue_add -> end [label="HAYIR"];
+
+    /* Kargo */
+    shipping_check -> shipping_free [label="EVET"];
+    shipping_check -> shipping_calc [label="HAYIR"];
+    shipping_free -> show_total;
+    shipping_calc -> show_total;
+
+    show_total -> choose_payment;
+    choose_payment -> payment_card [label="Kart"];
+    choose_payment -> payment_wait [label="Havale/Kapıda"];
+
+    payment_card -> process_card;
+    process_card -> order_create [label="EVET"];
+    process_card -> retry_payment [label="HAYIR"];
+
+    payment_wait -> order_create;
+
+    retry_payment -> payment_card [label="EVET"];
+    retry_payment -> end [label="HAYIR"];
+
+    order_create -> success_msg;
+    success_msg -> end;
+}
