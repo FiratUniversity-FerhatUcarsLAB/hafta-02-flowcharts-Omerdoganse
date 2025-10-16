@@ -1,0 +1,350 @@
+E-ticaret sitesinde ¨ur¨un ekleme, sepet y¨onetimi ve ¨odeme s¨urecini
+modelleyin.
+Sistem Gereksinimleri:
+Kullanıcı giri¸s kontrol¨u (ko¸sul)
+Ur¨un kategorileri arasında gezinme (d¨ong¨u) ¨
+Ur¨un sepete ekleme ¨
+Stok kontrol¨u (ko¸sul)
+Sepeti g¨or¨unt¨uleme ve d¨uzenleme (d¨ong¨u)
+˙
+Indirim kodu uygulanabilir (ko¸sul)
+Minimum 50 TL kontrol¨u (ko¸sul)
+Kargo ¨ucreti hesaplama (ko¸sul: ¿200 TL ¨ucretsiz)
+Odeme y¨ontemi se¸cimi (ko¸sul) ¨
+Sipari¸s onayı
+F.U - O.M.K (TF Yazılım M¨uh.)
+
+
+
+Adım 1: Sistem Analizi
+˙
+Ilk Prompt:
+“E-ticaret sitesinde sepet y¨onetimi ve ¨odeme sistemini adım adım a¸cıkla.
+Kullanıcı giri¸si, ¨ur¨un ekleme, stok kontrol¨u, indirim kodu, kargo hesaplama
+ve ¨odeme a¸samalarını i¸cermeli.”
+
+
+Adım 2: Pseudocode
+˙
+Ikinci Prompt:
+“Bu sistemi pseudocode olarak yaz. D¨ong¨uler i¸cin DONG ¨ U, ko¸sullar i¸cin ¨
+EGER- ˘ ˙
+ISE kullan. Her adımı BAS¸LA ile ba¸slat, B˙
+IT˙
+IR ile bitir. T¨um
+kontrol noktalarını belirt.”
+Adım 3: DOT Kodu
+U¸c¨unc¨u Prompt: ¨
+“Pseudocode’u Graphviz DOT formatına ¸cevir. rankdir=TB kullan. Karar
+noktalarında EVET/HAYIR etiketlerini unutma.”
+
+
+ChatGPT:
+8s boyunca düşündüm
+
+Harikasın — hepsini tek seferde hazırladım: önce kısa Sistem Analizi, sonra istenen detaylı pseudocode (BASLA/OKU/YAZ/EGER-ISE/DONGU/BITIR kullanılarak) ve son olarak Graphviz DOT kodu (rankdir=TB, kararlar için EVET/HAYIR etiketli). Hemen aşağıda.
+
+Adım 1 — Sistem Analizi (adım adım)
+
+Kullanıcı sisteme giriş yapar; oturum doğrulanmazsa giriş istenir (koşul).
+
+Kullanıcı ürün kategorileri arasında gezinir (DÖNGÜ) ve ürünleri görüntüler.
+
+Ürün sepete eklenirken stok kontrolü yapılır (KOŞUL); stok yoksa kullanıcı uyarılır.
+
+Kullanıcı sepeti görüntüler ve ürünleri düzenleyebilir (DÖNGÜ: miktar değiştir/sil).
+
+İndirim kodu girme seçeneği sunulur; geçerliyse indirim uygulanır (KOŞUL).
+
+Sepet toplamı hesaplanır; eğer toplam < 50 TL ise uyarı verilir (KOŞUL, minimum 50 TL).
+
+Kargo ücreti hesaplanır: toplam ≥ 200 TL ise kargo ücretsiz, değilse ücret eklenir (KOŞUL).
+
+Kullanıcı ödeme yöntemi seçer (kart/Havale/kapıda vb.); ilgili ödeme akışı işlenir (KOŞUL).
+
+Ödeme başarılıysa sipariş onaylanır, fatura/kargo bilgileri oluşturulur ve kullanıcı bilgilendirilir.
+
+Adım 2 — Detaylı Pseudocode (Türkçe, istenen yapı ile)
+BASLA
+
+YAZ "E-ticaret Sepet & Ödeme Sistemi başlatılıyor."
+
+/* Kullanıcı Girişi */
+YAZ "Lütfen kullanıcı adı giriniz:"
+OKU kullanici_adi
+YAZ "Lütfen şifre giriniz:"
+OKU sifre
+
+EGER dogru_giris_mi(kullanici_adi, sifre) ISE
+    logged_in ← TRUE
+    YAZ "Giriş başarılı."
+DEGILSE
+    logged_in ← FALSE
+    YAZ "Giriş başarısız. Misafir olarak devam ediliyor."
+SON
+
+/* Ürün gezinme ve ekleme */
+DONGU gezinme = "DEVAM" ISE
+    YAZ "Kategoriler listeleniyor..."
+    DONGU kategori_secimi != "ÇIK" ISE
+        YAZ "Kategori seçiniz veya 'ÇIK' ile çıkınız:"
+        OKU kategori_secimi
+        EGER kategori_secimi = "ÇIK" ISE
+            CIKIS DONGU
+        SON
+        YAZ "Seçilen kategori ürünleri listeleniyor..."
+        YAZ "Ürün ID girin veya 'GERI' ile kategori seçimine dönün:"
+        OKU urun_id
+        EGER urun_id = "GERI" ISE
+            SON
+        SON
+
+        YAZ "Sepete eklemek ister misiniz? (E/H)"
+        OKU ekle
+        EGER ekle = "E" ISE
+            YAZ "İstenen miktarı giriniz:"
+            OKU miktar
+            /* Stok kontrolü */
+            EGER stok_sorgula(urun_id) >= miktar ISE
+                sepete_ekle(urun_id, miktar)
+                YAZ "Ürün sepete eklendi."
+            DEGILSE
+                YAZ "Yetersiz stok! Mevcut stok: ", stok_sorgula(urun_id)
+            SON
+        SON
+    SON
+    YAZ "Kategori gezinmesini bitirmek istiyor musunuz? (E/H)"
+    OKU gezinme
+SON
+
+/* Sepeti görüntüleme ve düzenleme */
+DONGU sepet_islem = "E" ISE
+    YAZ "Sepetiniz gösteriliyor..."
+    sepetteki_urunleri_goster()
+    YAZ "Sepeti düzenlemek ister misiniz? (Miktar/Sil/H) :"
+    OKU secim
+    EGER secim = "Miktar" ISE
+        YAZ "Hangi ürün ID'si?"; OKU duzen_id
+        YAZ "Yeni miktarı girin:"; OKU yeni_miktar
+        EGER stok_sorgula(duzen_id) >= yeni_miktar ISE
+            sepet_guncelle_miktar(duzen_id, yeni_miktar)
+            YAZ "Miktar güncellendi."
+        DEGILSE
+            YAZ "Yetersiz stok. İşlem iptal edildi."
+        SON
+    DEGILSE EGER secim = "Sil" ISE
+        YAZ "Hangi ürün ID'si silinecek?"; OKU sil_id
+        sepet_urunu_sil(sil_id)
+        YAZ "Ürün silindi."
+    SON
+
+    YAZ "İndirim kodu uygulamak ister misiniz? (E/H)"
+    OKU indirim_secim
+    EGER indirim_secim = "E" ISE
+        YAZ "İndirim kodunu girin:"; OKU kod
+        EGER kod_gecerli_mi(kod) ISE
+            indirim_tutari ← kod_indirim_tutari(kod)
+            YAZ "İndirim uygulandı: ", indirim_tutari, " TL"
+            indirim_uygulandi ← TRUE
+        DEGILSE
+            YAZ "Geçersiz indirim kodu."
+            indirim_uygulandi ← FALSE
+        SON
+    SON
+
+    /* Toplam hesaplama */
+    toplam ← sepet_toplam()
+    EGER indirim_uygulandi ISE
+        toplam ← toplam - indirim_tutari
+    SON
+
+    /* Minimum 50 TL kontrolü */
+    EGER toplam < 50 ISE
+        YAZ "Sepet toplamı 50 TL'den az. Sipariş oluşturulamaz."
+        YAZ "Daha fazla ürün eklemek ister misiniz? (E/H)"
+        OKU sepet_islem
+        SON
+    SON
+
+    /* Kargo hesaplama */
+    EGER toplam >= 200 ISE
+        kargo ← 0
+        YAZ "Kargo: Ücretsiz (Toplam ≥ 200 TL)"
+    DEGILSE
+        kargo ← kargo_hesapla(toplam)
+        YAZ "Kargo ücreti: ", kargo, " TL"
+    SON
+
+    /* Ödeme toplamı */
+    odenecek ← toplam + kargo
+    YAZ "Ödenecek tutar: ", odenecek, " TL"
+
+    /* Ödeme yöntemi seçimi */
+    YAZ "Ödeme yöntemi seçiniz: (Kart/Havale/Kapıda)"
+    OKU odeme_yontemi
+
+    EGER odeme_yontemi = "Kart" ISE
+        YAZ "Kart bilgilerini giriniz..."
+        OKU kart_no; OKU son_kullanma; OKU cvv
+        EGER kart_onayla(kart_no, son_kullanma, cvv, odenecek) ISE
+            odeme_durumu ← "Başarılı"
+        DEGILSE
+            odeme_durumu ← "Başarısız"
+        SON
+    DEGILSE EGER odeme_yontemi = "Havale" ISE
+        YAZ "Banka bilgileri gösterildi. Havale yapıldıktan sonra onay beklenir."
+        odeme_durumu ← "Beklemede"
+    DEGILSE
+        YAZ "Kapıda ödeme seçildi."
+        odeme_durumu ← "Beklemede"
+    SON
+
+    /* Sipariş onayı */
+    EGER odeme_durumu = "Başarılı" ISE
+        siparis_id ← siparis_olustur(kullanici_adi, sepet, odenecek)
+        YAZ "Ödeme başarılı. Sipariş onaylandı. Sipariş ID: ", siparis_id
+        sepeti_temizle()
+        sepet_islem ← "H" /* döngüyü bitir */
+    DEGILSE
+        YAZ "Ödeme başarılı değil/henüz onaylanmadı. İşlemi tekrar etmek ister misiniz? (E/H)"
+        OKU sepet_islem
+    SON
+
+SON /* sepet_islem döngüsü bitiş */
+
+YAZ "İşlem tamamlandı. Hoşçakalın."
+
+BITIR
+
+Adım 3 — Graphviz DOT Kodu (rankdir=TB, kararlar EVET/HAYIR etiketli)
+digraph ECommerce {
+    rankdir=TB;
+    node [fontname="Arial"];
+
+    start [shape=oval, label="BAŞLA"];
+    login_in [shape=parallelogram, label="Kullanıcı adı ve şifre OKU"];
+    check_login [shape=diamond, label="Giriş başarılı mı?"];
+    guest_msg [shape=box, label="Misafir olarak devam et"];
+    
+    list_categories [shape=box, label="Kategorileri listele"];
+    choose_category [shape=parallelogram, label="Kategori seç (OKU)"];
+    list_products [shape=box, label="Ürünleri göster"];
+    choose_product [shape=parallelogram, label="Ürün ID gir / GERİ"];
+    ask_add [shape=diamond, label="Sepete ekle?"];
+    read_qty [shape=parallelogram, label="Miktarı OKU"];
+    check_stock [shape=diamond, label="Stok yeterli mi?"];
+    add_cart [shape=box, label="Sepete ekle"];
+    stock_fail [shape=box, label="Stok yetersiz - uyarı"];
+
+    view_cart [shape=box, label="Sepeti göster"];
+    cart_edit_decision [shape=diamond, label="Sepeti düzenle?"];
+    edit_choice [shape=parallelogram, label="Miktar/Sil OKU"];
+    update_cart [shape=box, label="Sepeti güncelle"];
+    
+    discount_offer [shape=diamond, label="İndirim kodu uygulanacak mı?"];
+    read_code [shape=parallelogram, label="Kod OKU"];
+    check_code [shape=diamond, label="Kod geçerli mi?"];
+    apply_discount [shape=box, label="İndirim uygula"];
+    code_fail [shape=box, label="Geçersiz kod"];
+
+    calc_total [shape=box, label="Toplamı hesapla (indirim sonrası)"];
+    min50 [shape=diamond, label="Toplam ≥ 50 TL mı?"];
+    warn_min [shape=box, label="Uyarı: Minimum 50 TL"];
+    ask_continue_add [shape=diamond, label="Daha ürün ekle?"];
+
+    shipping_check [shape=diamond, label="Toplam ≥ 200 TL mı?"];
+    shipping_free [shape=box, label="Kargo = 0 (Ücretsiz)"];
+    shipping_calc [shape=box, label="Kargo hesapla"];
+
+    show_total [shape=parallelogram, label="Ödenecek toplamı göster"];
+    choose_payment [shape=parallelogram, label="Ödeme yöntemi seç (Kart/Havale/Kapıda)"];
+    payment_card [shape=parallelogram, label="Kart bilgilerini OKU"];
+    process_card [shape=diamond, label="Kart ödemesi başarılı mı?"];
+    payment_wait [shape=box, label="Ödeme Beklemede / Havale/Kapıda"];
+
+    order_create [shape=box, label="Siparişi oluştur ve onayla"];
+    success_msg [shape=box, label="Sipariş onaylandı, ID göster"];
+    retry_payment [shape=diamond, label="Tekrar denemek ister misiniz?"];
+    end [shape=oval, label="BİTİR"];
+
+    /* Akış */
+    start -> login_in;
+    login_in -> check_login;
+    check_login -> list_categories [label="EVET"];
+    check_login -> guest_msg [label="HAYIR"];
+    guest_msg -> list_categories;
+
+    list_categories -> choose_category;
+    choose_category -> list_products;
+    list_products -> choose_product;
+    choose_product -> ask_add;
+    ask_add -> read_qty [label="EVET"];
+    ask_add -> list_categories [label="HAYIR"];
+
+    read_qty -> check_stock;
+    check_stock -> add_cart [label="EVET"];
+    check_stock -> stock_fail [label="HAYIR"];
+    stock_fail -> list_categories;
+    add_cart -> list_categories;
+
+    /* Kullanıcı sepeti görüntüleme akışı */
+    list_categories -> view_cart [label="SEPETİ GÖRÜNTÜLE"];
+    view_cart -> cart_edit_decision;
+    cart_edit_decision -> edit_choice [label="EVET"];
+    cart_edit_decision -> discount_offer [label="HAYIR"];
+
+    edit_choice -> update_cart;
+    update_cart -> view_cart;
+
+    /* İndirim */
+    discount_offer -> read_code [label="EVET"];
+    discount_offer -> calc_total [label="HAYIR"];
+    read_code -> check_code;
+    check_code -> apply_discount [label="EVET"];
+    check_code -> code_fail [label="HAYIR"];
+    code_fail -> view_cart;
+    apply_discount -> calc_total;
+
+    /* Toplam / minimum kontrol */
+    calc_total -> min50;
+    min50 -> shipping_check [label="EVET"];
+    min50 -> warn_min [label="HAYIR"];
+    warn_min -> ask_continue_add;
+    ask_continue_add -> list_categories [label="EVET"];
+    ask_continue_add -> end [label="HAYIR"];
+
+    /* Kargo */
+    shipping_check -> shipping_free [label="EVET"];
+    shipping_check -> shipping_calc [label="HAYIR"];
+    shipping_free -> show_total;
+    shipping_calc -> show_total;
+
+    show_total -> choose_payment;
+    choose_payment -> payment_card [label="Kart"];
+    choose_payment -> payment_wait [label="Havale/Kapıda"];
+
+    payment_card -> process_card;
+    process_card -> order_create [label="EVET"];
+    process_card -> retry_payment [label="HAYIR"];
+
+    payment_wait -> order_create;
+
+    retry_payment -> payment_card [label="EVET"];
+    retry_payment -> end [label="HAYIR"];
+
+    order_create -> success_msg;
+    success_msg -> end;
+}
+
+
+İstersen şu ekleri de yapabilirim (hangisini istersen hemen oluştururum):
+
+DOT kodundan PNG/SVG görsel diyagram (ben oluşturup sana indirebileceğin link veririm).
+
+Pseudocode’u Türkçe-İngilizce karşılaştırmalı hâle getirme.
+
+Bu akışı use-case veya aktivite diyagramı formatına çevirmek.
+
+Hangi eklemeyi istersin? (Hazır bekliyorum — ama hemen başlıyorum, onay beklemiyorum; söylemezsen varsayılan olarak diyagram görselini oluştururum.)
+
+ChatGPT hata yapabilir. Önemli bilgileri kontrol edin.
